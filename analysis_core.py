@@ -23,10 +23,25 @@ def process_folder(folder_path, input_fields, pre_data_list,
                    progress_callback=lambda x: None,
                    file_callback=lambda x: None):
     files = []
-    for root, dirs, filenames in os.walk(folder_path):
-        for file in filenames:
-            if file.endswith('.csv') and not file.endswith('_result.xlsx'):
-                files.append(os.path.join(root, file))
+    # for root, dirs, filenames in os.walk(folder_path):
+    #     for file in filenames:
+    #         if file.endswith('.csv') and not file.endswith('_result.xlsx'):
+    #             files.append(os.path.join(root, file))
+
+    if os.path.isfile(folder_path):
+        if folder_path.endswith('.csv'):
+            files.append(folder_path)
+        else:
+            print("这是一个文件，但不是 CSV 文件")
+    elif os.path.isdir(folder_path):
+        for root, dirs, filenames in os.walk(folder_path):
+            for file in filenames:
+                if file.endswith('.csv') and not file.endswith('_result.xlsx'):
+                    files.append(os.path.join(root, file))
+    else:
+        print("路径无效或不存在")
+
+
 
     total_files = len(files)
 
@@ -41,34 +56,7 @@ def process_folder(folder_path, input_fields, pre_data_list,
 
         progress_callback(int((idx + 1) / total_files * 100))
 
-
 # 定义函数：根据每行时间计算 Pn 和 Pn'
-
-
-@timing
-def fast_read_excel(file_path, skiprows, usecols):
-    # 转换为 CSV 临时文件
-    temp_csv_path = file_path.replace(".xlsx", ".temp.csv")
-    cmd = [
-        'xlsx2csv',
-        '-n', '1',  # 第1个sheet
-        '-f', '%.16g',  # 保留浮点数精度
-        file_path,
-        temp_csv_path
-    ]
-    subprocess.run(
-        ['xlsx2csv', file_path, temp_csv_path],
-        check=True, shell=True
-    )
-    print("转换成功")
-
-    # 读取 CSV（跳过前6行）
-    df = pd.read_csv(temp_csv_path, skiprows=skiprows, usecols=usecols)
-
-    # 删除临时文件
-    os.remove(temp_csv_path)
-    return df
-
 
 @timing
 def process_single_file(file_path, input_fields, pre_data_list):
