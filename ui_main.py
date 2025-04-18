@@ -31,12 +31,37 @@ class ExcelAnalysisApp(QMainWindow):
 
     def initUI(self):
         layout = QVBoxLayout()
-        self.label = QLabel('等待导入文件夹...')
-        layout.addWidget(self.label)
 
-        import_button = QPushButton('导入Excel文件')
-        import_button.clicked.connect(self.importExcel)
-        layout.addWidget(import_button)
+        # 单选框区域
+        radio_group = QHBoxLayout()
+        radio_group.addWidget(QLabel("处理方式:"))
+
+        self.radio_batch = QRadioButton("批量处理")
+        self.radio_single = QRadioButton("单文件处理")
+        self.radio_single.setChecked(True)
+
+        radio_group.addWidget(self.radio_single)
+        radio_group.addWidget(self.radio_batch)
+
+        # 单选框事件连接
+        self.radio_batch.toggled.connect(lambda: self.DealFileType(True))
+        self.radio_single.toggled.connect(lambda: self.DealFileType(False))
+
+        h_box = QHBoxLayout()
+        h_box.addLayout(radio_group)
+        layout.addLayout(h_box)
+
+        # 导入按钮
+        self.import_button = QPushButton('导入单日csv文件')
+        self.import_button.clicked.connect(self.importCSV)
+        layout.addWidget(self.import_button)
+
+        self.import_button1 = QPushButton('导入文件夹')
+        self.import_button1.clicked.connect(self.importExcel)
+        layout.addWidget(self.import_button1)
+
+        # 初始状态（默认是单文件）
+        self.import_button1.setVisible(False)
 
         self.label1 = QLabel('等待导入预测调频曲线数据...')
         layout.addWidget(self.label1)
@@ -87,11 +112,21 @@ class ExcelAnalysisApp(QMainWindow):
         central.setLayout(layout)
         self.setCentralWidget(central)
 
+    def DealFileType(self, is_batch):
+        self.import_button.setVisible(not is_batch)
+        self.import_button1.setVisible(is_batch)
+
     def toggleSampleCycle(self, enabled):
         self.sample_cycle_edit.setEnabled(enabled)
         self.sample_cycle_edit.setStyleSheet(
             "" if enabled else "QLineEdit:disabled { background: #f5f5f5; color: #a0a0a0; border: 1px solid #d0d0d0; }"
         )
+
+    def importCSV(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, '选择csv文件', '', 'CSV Files (*.csv);;All Files ()')
+        if file_path:
+            self.folder_path = file_path
+            self.label.setText(f'已导入文件：{file_path}')
 
     def importExcel(self):
         folder_path = QFileDialog.getExistingDirectory(self, '选择文件夹')
