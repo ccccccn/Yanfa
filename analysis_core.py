@@ -28,6 +28,8 @@ def process_folder(folder_path, input_fields, pre_data_list,
     #         if file.endswith('.csv') and not file.endswith('_result.xlsx'):
     #             files.append(os.path.join(root, file))
 
+    file_type = 'file' if os.path.isfile(folder_path) else 'directory'
+
     if os.path.isfile(folder_path):
         if folder_path.endswith('.csv'):
             files.append(folder_path)
@@ -36,19 +38,17 @@ def process_folder(folder_path, input_fields, pre_data_list,
     elif os.path.isdir(folder_path):
         for root, dirs, filenames in os.walk(folder_path):
             for file in filenames:
-                if file.endswith('.csv') and not file.endswith('_result.xlsx'):
+                if file.endswith('.xlsx') and not file.endswith('_result.xlsx'):
                     files.append(os.path.join(root, file))
     else:
         print("路径无效或不存在")
-
-
 
     total_files = len(files)
 
     for idx, file in enumerate(files):
         file_callback(f"当前处理文件：{os.path.basename(file)}")
         try:
-            process_single_file(file, input_fields, pre_data_list)
+            process_single_file(file, input_fields, pre_data_list, file_type)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -56,13 +56,15 @@ def process_folder(folder_path, input_fields, pre_data_list,
 
         progress_callback(int((idx + 1) / total_files * 100))
 
+
 # 定义函数：根据每行时间计算 Pn 和 Pn'
 
 @timing
-def process_single_file(file_path, input_fields, pre_data_list):
-    df = pd.read_csv(file_path, skiprows=6, usecols=[0, 1],encoding='gbk')
-    # df = fast_read_excel(file_path, skiprows=6, usecols=[0,1])
-    # df = pd.read_excel(file_path, skiprows=6, usecols="A:B")
+def process_single_file(file_path, input_fields, pre_data_list, file_type):
+    if file_type == 'file':
+        df = pd.read_csv(file_path, skiprows=6, usecols=[0, 1], encoding='gbk')
+    else:
+        df = pd.read_excel(file_path, skiprows=6, usecols="A:B")
 
     # 处理频率偏差与实时功率
     df['频率偏差'] = 50 - df['电网频率（Hz）']
