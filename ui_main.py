@@ -51,6 +51,8 @@ class ExcelAnalysisApp(QMainWindow):
         h_box.addLayout(radio_group)
         layout.addLayout(h_box)
 
+        self.label = QLabel('等待导入处理文件...')
+        layout.addWidget(self.label)
         # 导入按钮
         self.import_button = QPushButton('导入单日csv文件')
         self.import_button.clicked.connect(self.importCSV)
@@ -62,6 +64,8 @@ class ExcelAnalysisApp(QMainWindow):
 
         # 初始状态（默认是单文件）
         self.import_button1.setVisible(False)
+
+
 
         self.label1 = QLabel('等待导入预测调频曲线数据...')
         layout.addWidget(self.label1)
@@ -123,10 +127,13 @@ class ExcelAnalysisApp(QMainWindow):
         )
 
     def importCSV(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, '选择csv文件', '', 'CSV Files (*.csv);;All Files ()')
-        if file_path:
-            self.folder_path = file_path
-            self.label.setText(f'已导入文件：{file_path}')
+        try:
+            file_path, _ = QFileDialog.getOpenFileName(self, '选择csv文件', '', 'CSV Files (*.csv);;All Files ()')
+            if file_path:
+                self.folder_path = file_path
+                self.label.setText(f'已导入文件：{file_path}')
+        except Exception as e:
+            QMessageBox.critical(self, '导入错误', str(e))
 
     def importExcel(self):
         folder_path = QFileDialog.getExistingDirectory(self, '选择文件夹')
@@ -151,6 +158,7 @@ class ExcelAnalysisApp(QMainWindow):
                 import pandas as pd
                 pre_data_pd = pd.read_excel(file_path)
                 self.pre_data_list = [row[0] for row in pre_data_pd.values.tolist()]
+                print(self.pre_data_list)
 
                 self.progress_dialog.close()
                 QMessageBox.information(self, '完成', f'预测曲线数据处理完成，已加载 {len(self.pre_data_list)} 条数据')

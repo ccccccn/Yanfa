@@ -62,9 +62,9 @@ def process_folder(folder_path, input_fields, pre_data_list,
 @timing
 def process_single_file(file_path, input_fields, pre_data_list, file_type):
     if file_type == 'file':
-        df = pd.read_csv(file_path, skiprows=6, usecols=[0, 1], encoding='gbk')
+        df = pd.read_csv(file_path, usecols=[0, 1])
     else:
-        df = pd.read_excel(file_path, skiprows=6, usecols="A:B")
+        df = pd.read_excel(file_path, skiprows=0, usecols="A:B")
 
     # 处理频率偏差与实时功率
     df['频率偏差'] = 50 - df['电网频率（Hz）']
